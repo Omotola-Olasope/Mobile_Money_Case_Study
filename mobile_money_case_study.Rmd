@@ -1,0 +1,496 @@
+---
+title: "Mobile Money Case Study"
+author: "Omotola_Olasope"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction and background
+A company has recently finished the data collection for a project on the use of Mobile Money services and the experiences of Mobile Money customers in three districts of Kenya.
+
+### Objectives
+The aim of the analysis is to identify and interpret issues that negatively affect mobile money customers. This will be discussed by the Specialist Advisory Board for the study which consists of representatives from the National Bank of Kenya, the Utilities Regulatory Authority and NGO’s focusing on access to digital financial services and associated consumer protection issues.
+
+The research manager wants the following points addressed:
+
+1. Format the data so that there is now one observation per participant.
+
+2. Create two dummy variables for whether each participant is: i) financially excluded and ii) digitally financially included. Determine the overall rates of financial exclusion and digital financial inclusion for the combined population of the three districts?
+
+    a. Financial exclusion is defined as not having registered for any type of financial account including accounts with: Mobile money operators, banks, micro-finance institutions (MFI’s), savings and credit cooperative organisations (SACCO’s) and village savings and loan associations (VSLA’s).
+
+    b. Digital financial inclusion is defined as having at least one registered account with a mobile money operator or an online bank account.
+
+3. Describe in a few short paragraphs how the mobile money market is divided between the three companies.
+
+4. Understand the difference in the share of customers who have experienced failed mobile money transactions in rural and urban villages. Is the difference statistically significant?
+
+5. What variables are good predictors that someone will cancel their mobile money account? What causes a customer to stop using their mobile money account? (Including how strong the evidence is).
+
+## Data Preparation
+The data is publicly available on George Mwangi's git hub page <https://github.com/mwangi-george/Data_Analysis_Case_Study>
+
+## Data Processing/Cleaning
+For the data to be useful and accurate enough to answer the questions asked, it needs to be cleaned.
+After downloading the data csv file, I started the data cleaning process in Google Sheets using the following steps:
+* I created separate columns for each of the six (6) account types and three (3) companies
+* Rows with particular account types were set to the boolean "TRUE/FALSE" values
+* I imported the file to RStudio in order to convert any logical columns to character type
+* In RStudio, I changed all cells in account types with "FALSE" to blank cells after which I exported the resulting data frame to a csv file in order to continue the cleaning process in Google Sheets. The R code used is highlighted under
+
+```
+mmdf$mobile_money <- gsub('FALSE', '', mmdf$mobile_money)
+mmdf$bank_account <- gsub('FALSE', '', mmdf$bank_account)
+mmdf$vsla_account <- gsub('FALSE', '', mmdf$vsla_account)
+mmdf$sacco_account <- gsub('FALSE', '', mmdf$sacco_account)
+mmdf$online_bank_account <- gsub('FALSE', '', mmdf$online_bank_account)
+mmdf$no_account <- gsub('FALSE', '', mmdf$no_account)
+
+write.csv(mmdf,"/home/omotolaolasope/Desktop/Data_Analysis/mobile_money_case_study/mmdf.csv", row.names = FALSE)
+```
+
+* In Sheets, I merged all rows with identical 'hhid's together and deleted columns that are not needed
+* I then exported the sheet to csv and imported the file back into RStudio for further cleaning
+
+```
+mmdf <- read.csv('mmdf.csv')
+```
+
+* In Rstudio, I renamed some columns to ease understanding of the variables
+```
+colnames(mmdf)[10] ="hh_location" #urban
+colnames(mmdf)[22] ="undrstd_terms_nd_cond"
+colnames(mmdf)[24] ="taken_mm_loan"
+colnames(mmdf)[25] ="ntwrk_unavailable_mm_txn"
+colnames(mmdf)[26] ="clear_about_txn_fees"
+colnames(mmdf)[27] ="txn_ever_failed"
+colnames(mmdf)[28] ="agent_ever_not_had_enough_cash"
+colnames(mmdf)[29] ="have_copy_of_terms_nd_cond"
+colnames(mmdf)[30] ="undrstd_hw_nd_whr_to_complain"
+colnames(mmdf)[31] ="had_issue_reslvd_after_complaint"
+colnames(mmdf)[32] ="understand_data_mm_providers_collect"
+colnames(mmdf)[33] ="been_victim_of_fraud"
+
+colnames(mmdf)
+```
+
+* I exported the resulting data frame to a csv file in order to finalise the cleaning process in Google Sheets. I then exported the sheet to csv and imported the file into RStudio for Analysis
+
+## Analysis With R
+
+### Upload and loading CSV file to R
+```{r}
+mmdf3 <- read.csv('mmdf3.csv')
+raw_df <- read.csv('mobile_money_data.csv')
+```
+
+### Installing and loading packages and libraries
+
+```{r include=FALSE, results='hide', message=FALSE, warning=FALSE}
+#install.packages('tidyverse')
+#install.packages("lessR")
+
+library(tidyverse) 
+library(dplyr)
+library(naniar) #visualize missings per variable
+library(gridExtra)
+library(grid)
+library(lessR) #to create pie charts
+```
+
+### Exploring the data
+Take a look at the data.
+```{r}
+str(mmdf3)
+
+#Convert any logical columns to character type
+mmdf3 <- data.frame(lapply(mmdf3, function(x) if(is.logical(x)) { 
+  return(as.character(x))
+} else {  
+  return(x) 
+}
+), stringsAsFactors=FALSE)
+```
+
+### Change all cells in account types with "NA" to 'FALSE'
+
+```{r}
+mmdf3$mobile_money <- mmdf3$mobile_money %>% replace_na('FALSE')
+mmdf3$bank_account <- mmdf3$bank_account %>% replace_na('FALSE')
+mmdf3$vsla_account <- mmdf3$vsla_account %>% replace_na('FALSE')
+mmdf3$sacco_account <- mmdf3$sacco_account %>% replace_na('FALSE')
+mmdf3$online_bank_account <- mmdf3$online_bank_account %>% replace_na('FALSE')
+mmdf3$no_account <- mmdf3$no_account %>% replace_na('FALSE')
+
+```
+
+### Grided Histogram of distribution of account types
+```{r echo=FALSE, message=FALSE, results='hide'}
+p1 <- ggplot(aes(x = mobile_money, fill = mobile_money), data = mmdf3) +
+  geom_histogram(stat="count")
+
+p2 <- ggplot(aes(x = online_bank_account, fill = online_bank_account), data = mmdf3) +
+  geom_histogram(stat="count")
+
+p3 <- ggplot(aes(x = bank_account, fill = bank_account), data = mmdf3) +
+  geom_histogram(stat="count")
+
+p4 <- ggplot(aes(x = vsla_account, fill = vsla_account), data = mmdf3) +
+  geom_histogram(stat="count")
+
+p5 <- ggplot(aes(x = sacco_account, fill = sacco_account), data = mmdf3) +
+  geom_histogram(stat="count")
+
+p6 <- ggplot(aes(x = no_account, fill = no_account), data = mmdf3) +
+  geom_histogram(stat="count")
+
+grid.arrange(p1, p4, p5, p3, p6, p2, ncol=3, top = 'Count of Account Types')
+
+```
+
+#### Combined distribution of account types
+
+```{r echo=FALSE}
+count_acct_types <- raw_df %>% 
+  group_by(account_type) %>% 
+  summarise(n = n())
+
+ggplot(aes(x = reorder(account_type, -n), y = n, fill = account_type), data = count_acct_types) +
+  geom_bar(stat="identity") +
+  labs(x = 'account type', y = 'count', title="Count of Account Types")
+
+```
+
+
+## Create two dummy variables for whether each participant is:
+## i) financially excluded and ii) digitally financially included.
+
+```{r}
+mmdf2 <- transform(mmdf3, fin_excl = ifelse(no_account == "TRUE", TRUE, FALSE))
+
+mmdf2 <- transform(mmdf2, dig_fin_incl = ifelse((mobile_money == "TRUE") | (online_bank_account =="TRUE"), TRUE, FALSE))
+
+```
+
+### Get overall rate of financial exclusion
+
+```{r}
+rate_fin_excl <- mmdf2 %>% 
+  group_by(fin_excl) %>% 
+  summarise(n = n())
+
+rate_fin_excl$fin_excl_percen <- 100*(rate_fin_excl$n/sum(rate_fin_excl$n))
+
+ggplot(aes(x = reorder(fin_excl, fin_excl_percen), y = fin_excl_percen, fill = fin_excl), data = rate_fin_excl) +
+  geom_bar(stat="identity") +
+  labs(x = 'financially excluded', y = 'percent', title="overall rate of financial exclusion") +
+  guides(fill=guide_legend(title="Financially excluded"))
+
+#create pie chart of rates of financial exclusion
+pie(rate_fin_excl$fin_excl_percen,
+    labels = paste0(round(rate_fin_excl$fin_excl_percen, 2), "%"),
+    main = 'overall rate of financial exclusion')
+```
+
+### Get overall rate of digital financial inclusion
+```{r}
+dig_fin_inclu <- mmdf2 %>% 
+  group_by(dig_fin_incl) %>% 
+  summarise(n = n())
+
+dig_fin_inclu$dig_fin_inclu_percen <- 100*(dig_fin_inclu$n/sum(dig_fin_inclu$n))
+
+ggplot(aes(x = reorder(dig_fin_incl, dig_fin_inclu_percen), y = dig_fin_inclu_percen, fill = dig_fin_incl), data = dig_fin_inclu) +
+  geom_bar(stat="identity") +
+  labs(x = 'digital finance included', y = 'percent', title="overall rate of digital financial inclusion") +
+  guides(fill=guide_legend(title="Digital Financially Included"))
+
+#create pie chart of rates of financial exclusion
+pie(dig_fin_inclu$dig_fin_inclu_percen,
+    labels = paste0(round(dig_fin_inclu$dig_fin_inclu_percen, 2), "%"),
+    main = 'overall rate of digital financial inclusion')
+
+```
+
+
+## How is the mobile money market divided between the three companies?
+
+### Seperate columns with the telcos for easier analysis
+```{r}
+col_telcos <- mmdf2 %>% 
+  select(mm_account_telco_1, mm_account_telco_2, mm_account_telco_3)
+```
+
+### Group the data by the telcos and get the count of each
+```{r message=FALSE, warning=FALSE}
+count_mm_telco <- mmdf2 %>% 
+  group_by(mm_account_telco_1, mm_account_telco_2, mm_account_telco_3) %>% 
+  summarise(n = n())
+
+print(count_mm_telco)
+```
+
+### Get the sum of mobile money tel_co users for each company
+```{r}
+sum_mm_telco_users <- data.frame(company = c('company A', 'company B', 'company C'),
+                 total_users=c(sum(col_telcos == "Company_A"), sum(col_telcos == "Company_B"), sum(col_telcos == "Company_C")))
+
+print(sum_mm_telco_users)
+
+ggplot(aes(x = company, y = total_users), data = sum_mm_telco_users) +
+  geom_bar(stat = 'identity') +
+  labs(x = 'mobile money company', y = 'mobile money customers', title="Mobile money market between the three companies")
+```
+
+#### From the resulting table, company A has the most customers with 597 mobile money customers, company B has 570 customers and company C has the least with 85 customers
+
+
+## Is there a difference in the share of customers who have experienced failed mobile money transactions in rural and urban villages? If so, is it statistically significant? 
+
+### Seperate columns for easier analysis
+```{r}
+df.mm_txn <- mmdf2 %>% 
+  select(hh_location, mobile_money, txn_ever_failed, had_issue_reslvd_after_complaint)
+```
+
+### Know the count of customers at each location
+```{r}
+count_hhlocation <- df.mm_txn %>% 
+  group_by(hh_location) %>% 
+  summarise(number_of_residents = n())
+
+print(count_hhlocation)
+
+ggplot(aes(x = hh_location, fill = mobile_money), data = df.mm_txn) +
+  geom_histogram(stat="count")
+```
+
+#### Customers in the rural areas are significantly more than those in the urban areas
+
+
+### Determine the percentage of failed transactions per location
+```{r}
+#seperate columns for easier analysis
+df.txn <- mmdf2 %>% 
+  select(hh_location, txn_ever_failed, had_issue_reslvd_after_complaint)
+
+grp_txn <- df.txn %>% 
+  group_by(hh_location, txn_ever_failed) %>% 
+  summarise(number = n())
+
+#Filter Rural transactions
+rural_txns <- grp_txn %>% 
+  filter(hh_location == 'Rural')
+
+#get percentage and create new column for it
+rural_txns$txn_percen <- round(100*(rural_txns$number/sum(rural_txns$number)), 2)
+print(rural_txns)
+
+#graph of rural transactions
+ruralG <- ggplot(aes(x = txn_ever_failed, y = txn_percen, fill = txn_ever_failed), data = rural_txns) +
+  geom_bar(stat = 'identity') +
+  ylim(0, 100) +
+  labs(x = 'Has Transaction Ever Failed', y = 'Percentage (%)', title="Graph showing failed transaction percentages in Rural location") +
+  scale_fill_manual(values = c("#ADD8E6", "#F93B19", "green"),
+                    labels = c("N/A", "No","Yes")) +
+  guides(fill=guide_legend(title="Has transaction \never failed?"))
+
+#Filter Urban transactions
+urban_txns <- grp_txn %>% 
+  filter(hh_location == 'Urban')
+
+#get percentage and create new column for it
+urban_txns$txn_percen <- round(100*(urban_txns$number/sum(urban_txns$number)), 2)
+print(urban_txns)
+
+#graph of urban transactions
+urbanG <- ggplot(aes(x = txn_ever_failed, y = txn_percen, fill = txn_ever_failed), data = urban_txns) +
+  geom_bar(stat = 'identity') +
+  ylim(0, 100) +
+  labs(x = 'Has Transaction Ever Failed', y = 'Percentage (%)', title="Graph showing failed transaction percentages in Urban location") +
+  scale_fill_manual(values = c("#ADD8E6", "#F93B19", "green"),
+                    labels = c("N/A", "No","Yes")) +
+  guides(fill=guide_legend(title="Has transaction \never failed?"))
+
+#compare percentages for both regions
+grid.arrange(ruralG, urbanG, ncol=2, top = 'Compare percentage Transactions by Location')
+```
+
+#### There is a significant difference in the share of customers who have experienced failed mobile money transactions in rural and urban villages. 32% of transactions in urban locations have failed before while 16% of transactions in rural areas have failed before. Nevertheless, there are limitations to this figures due to the number of customers that did not give records of if their transactions failed or not.
+
+
+## What variables are good predictors that someone will cancel their mobile money account?
+
+```{r}
+# Filter data by number of active mobile money accounts and number of mobile money accounts that have been cancelled
+
+mm_acc_cancled <- mmdf2 %>% 
+  filter(mm_account_cancelled == 'yes')
+
+mmTrue <- mmdf2 %>% 
+  filter(mobile_money == 'TRUE')
+
+mm_acc_cancled %>% 
+  group_by(mm_trust) %>% 
+  summarise(n = n())
+
+ggplot(aes(x = district, fill = hh_location), data = mmdf2) +
+  geom_histogram(stat = 'count') +
+  scale_fill_manual(values = c("brown", "#AB9B98")) +
+  labs(title = 'location of customers per district') +
+  guides(fill=guide_legend(title="Customer location"))
+
+ggplot(aes(x = district, fill = district), data = mm_acc_cancled) +
+  geom_histogram(stat = 'count') +
+  scale_fill_manual(values = c("green", "#F93B19", "#AB9B98")) +
+  labs(title = 'number of mobile money accounts cancelled by district')
+
+ggplot(aes(x = mm_trust, fill = agent_trust), data = mmdf2) +
+  geom_histogram(stat = 'count') +
+  labs(title = 'Trust Levels for Mobile Money and Mobile Money Agents', x = 'Do you trust mobile money?') +
+  guides(fill=guide_legend(title="Do you trust \nmobile money agents?")) +
+  scale_fill_manual(values = c("#ADD8E6", "#F93B19", "green"),
+                    labels = c("N/A", "No","Yes"))
+
+mm_users <- ggplot(aes(x = mm_trust, fill = agent_trust), data = mmTrue) +
+  geom_histogram(stat = 'count') +
+  ylim(0, 600) +
+  scale_fill_manual(values = c("#ADD8E6", "#F93B19", "green"),
+                    labels = c("N/A", "No","Yes")) +
+  guides(fill=guide_legend(title="Do you trust \nmobile money agents?")) +
+  labs(title = 'Graph of customers using mobile money \nwho dont trust mobile money and mobile money agents', x = 'trust mobile money?')
+
+mm_canc <- ggplot(aes(x = mm_trust, fill = agent_trust), data = mm_acc_cancled) +
+  geom_histogram(stat = 'count') +
+  ylim(0, 600) +
+  scale_fill_manual(values = c("#ADD8E6", "#F93B19", "green"),
+                    labels = c("N/A", "No","Yes")) +
+  guides(fill=guide_legend(title="Do you trust \nmobile money agents?")) +
+  labs(title = 'Graph of customers who cancelled their mobile money account and \ndont trust mobile money and mobile money agents', x = 'trust mobile money?')
+
+#compare for both mm users and those cancelled
+grid.arrange(mm_users, mm_canc, ncol=2, top = 'Compare mobile money customers that dont trust mobile money and mobile money agents')
+
+```
+
+#### From the charts provided above, the following insights can be made
+* All customers in District B are in rural locations while most customers in District C are in rural locations.
+* District A had the least number of mobile money accounts cancelled while district B had the highest number of mobile money accounts cancelled.
+* Majority of customers don't trust mobile money or mobile money agents.
+* Out of the majority of customers that don't trust mobile money or mobile money agents, only a few (179) cancelled their mobile money accounts.
+* Of the 179 customers who cancelled their mobile money accounts, 151 don't trust the mobile money platform (about 84.36%).
+
+
+#### As a result of these insights, trust in mobile money and mobile money agents are variables that are good predictors that someone will cancel their mobile money account. Location slightly matters.
+
+
+
+## What causes a customer to stop using their mobile money account?
+
+```{r}
+ggplot(aes(x = prefer_cash), data = mmdf2) +
+  geom_histogram(stat = 'count') +
+  labs(x = 'prefer cash?')
+
+ggplot(aes(x = understand_data_mm_providers_collect, fill = have_copy_of_terms_nd_cond), data = mmdf2) +
+  geom_histogram(stat = 'count') +
+  scale_fill_manual(values = c("white", "#F93B19", "#AB9B98"),
+                    labels = c("N/A", "No","Yes")) +
+  labs(x = 'Do you understand what data mobile money providers collect about you?') +
+  guides(fill=guide_legend(title="Do you have a copy of the \nmobile money terms and conditions?"))
+
+```
+
+#### It is noted that a vast majority of customers prefer cash. Furthermore, majority do not have a copy of the mobile money terms and conditions in addition to not understanding what data mobile money providers collect about them. Thus, one can assume that customers lack of trust in data collection and conditions of mobile money use, coupled with a preference for the cash option are factors that can cause a customer to stop using their mobile money account 
+
+
+# Key Findings and Summary
+### Plot One
+```{r echo=FALSE, Plot_One}
+mm_customers <- mmdf2 %>% 
+  group_by(mobile_money) %>% 
+  summarise(number = n())
+
+mm_customers$mm_percen <- 100*(mm_customers$number/sum(mm_customers$number))
+
+print(mm_customers)
+
+ggplot(aes(x = mobile_money, y = mm_percen, fill = number), data = mm_customers) +
+  geom_bar(stat="identity") +
+  ylim(0, 100) +
+  labs(x = 'mobile money user', y = 'percentage (%)', title="Percentage of Mobile Money Users Across Sample Data")
+
+pie(mm_customers$mm_percen,
+    labels = paste0(round(mm_customers$mm_percen, 2), "%"),
+    main = 'Percentage of Mobile Money Users Across Sample Data',
+    )
+
+```
+### Description
+Mobile money customers account for approximately 68.7% of the sample data. This suggests that the use of mobile money is popular among customers.
+
+
+### Plot Two
+```{r echo=FALSE, Plot_Two}
+
+ggplot(aes(x = hh_location, fill = mobile_money), data = df.mm_txn) +
+  geom_histogram(stat="count")
+
+col_mm_users <- mmdf2 %>% 
+  select(mobile_money, hh_location)
+
+df.mm_users <- data.frame(location = c('Rural', 'Urban'),
+                           total_mm_users=c(sum((col_mm_users$mobile_money == "TRUE" & col_mm_users$hh_location == "Rural")),
+                                               sum((col_mm_users$mobile_money == "TRUE" & col_mm_users$hh_location == "Urban"))),
+                           total_customers=c(sum(col_mm_users$hh_location == "Rural"),
+                                             sum(col_mm_users$hh_location == "Urban")))
+
+df.mm_users$mm_users_percen <- round(100*(df.mm_users$total_mm_users/df.mm_users$total_customers), 2)
+
+print(df.mm_users)
+
+ggplot(aes(x = location, y = mm_users_percen), data = df.mm_users) +
+  geom_bar(stat = 'identity') +
+  ylim(0, 100) +
+  labs(x = 'mobile money users percentage/location', y = 'percent (%)', title="Percentage of Mobile Money Users Per Location")
+
+
+```
+### Description
+Customers in the rural locations are significantly more than those in the urban locations. However, the percentage of customers using mobile money is higher in urban locations with 85.28% of customers in urban locations using mobile money and 63.94% of customers in rural locations using mobile money.
+
+
+### Plot Three
+```{r echo=FALSE, Plot_Three}
+
+ggplot(aes(x = understand_data_mm_providers_collect, fill = have_copy_of_terms_nd_cond), data = mmdf2) +
+  geom_histogram(stat = 'count') +
+  scale_fill_manual(values = c("white", "#F93B19", "#AB9B98"),
+                    labels = c("N/A", "No","Yes")) +
+  labs(x = 'Do you understand what data mobile money providers collect about you?') +
+  guides(fill=guide_legend(title="Do you have a copy of the \nmobile money terms and conditions?"))
+
+```
+
+### Description Three
+Majority of customers do not understand what data mobile money providers collect about them, neither do they have a copy of the mobile money terms and conditions. This portends great risk as unscrupulous elements amongst the providers could take advantage of the development to breach data privacy thereby violating the rights of customers.
+
+## Summary/Recommendations
+* Sensitization as well as access to mobile money services and other digital financial services should be sustained and intensified, following the wide use of mobile money amongst the populace.
+
+* The urban locations in particular should be exploited as they are more receptive to mobile money.
+
+* Although the majority of customers have their issues properly handled in a satisfactory way, the National Bank of Kenya should ensure to keep these customers satisfied. Reward programs and discounts could be introduced to to ensure the customers remain loyal.
+
+* Mobile Money companies should be properly monitored by the Regulatory Authorities to ensure they are not involved in breach of data privacy and other related issues.
+
+* NGO’s focusing on access to digital financial services and associated consumer protection issues should promote sensitization campaigns for customers so they are aware of data privacy and policies of digital financial services.
+
+## Limitations of the Data
+* A lot of customer information critical to accurate analysis was missing in the data. Many questions asked in the survey were not answered by participating customers.
+
+------
