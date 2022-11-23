@@ -2,7 +2,9 @@
 title: "Mobile Money Case Study"
 author: "Omotola_Olasope"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
