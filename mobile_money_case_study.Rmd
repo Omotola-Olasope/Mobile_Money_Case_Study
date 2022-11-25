@@ -473,6 +473,7 @@ pie(mm_customers$mm_percen,
     )
 
 ```
+
 ### Description
 Mobile money customers account for approximately 68.7% of the sample data. This suggests that the use of mobile money is popular among customers.
 
@@ -503,6 +504,7 @@ ggplot(aes(x = location, y = mm_users_percen), data = df.mm_users) +
 
 
 ```
+
 ### Description
 Customers in the rural locations are significantly more than those in the urban locations. However, the percentage of customers using mobile money is higher in urban locations with 85.28% of customers in urban locations using mobile money and 63.94% of customers in rural locations using mobile money.
 
@@ -519,7 +521,7 @@ ggplot(aes(x = understand_data_mm_providers_collect, fill = have_copy_of_terms_n
 
 ```
 
-### Description Three
+### Description
 Majority of customers do not understand what data mobile money providers collect about them, neither do they have a copy of the mobile money terms and conditions. This portends great risk as unscrupulous elements amongst the providers could take advantage of the development to breach data privacy thereby violating the rights of customers.
 
 ## Recommendations

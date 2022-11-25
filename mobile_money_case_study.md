@@ -639,9 +639,12 @@ ggplot(aes(x = understand_data_mm_providers_collect, fill = have_copy_of_terms_n
     ## 2 TRUE            827      68.6
 
 ![](mobile_money_case_study_files/figure-markdown_github/Plot_One-1.png)![](mobile_money_case_study_files/figure-markdown_github/Plot_One-2.png)
-\### Description Mobile money customers account for approximately 68.7%
-of the sample data. This suggests that the use of mobile money is
-popular among customers.
+
+### Description
+
+Mobile money customers account for approximately 68.7% of the sample
+data. This suggests that the use of mobile money is popular among
+customers.
 
 ### Plot Two
 
@@ -652,17 +655,20 @@ popular among customers.
     ## 2    Urban            226             265           85.28
 
 ![](mobile_money_case_study_files/figure-markdown_github/Plot_Two-2.png)
-\### Description Customers in the rural locations are significantly more
-than those in the urban locations. However, the percentage of customers
-using mobile money is higher in urban locations with 85.28% of customers
-in urban locations using mobile money and 63.94% of customers in rural
-locations using mobile money.
+
+### Description
+
+Customers in the rural locations are significantly more than those in
+the urban locations. However, the percentage of customers using mobile
+money is higher in urban locations with 85.28% of customers in urban
+locations using mobile money and 63.94% of customers in rural locations
+using mobile money.
 
 ### Plot Three
 
 ![](mobile_money_case_study_files/figure-markdown_github/Plot_Three-1.png)
 
-### Description Three
+### Description
 
 Majority of customers do not understand what data mobile money providers
 collect about them, neither do they have a copy of the mobile money
