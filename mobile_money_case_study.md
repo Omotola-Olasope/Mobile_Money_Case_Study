@@ -465,6 +465,7 @@ probability of success (the proportion of failed mobile money
 transactions in the two locations)
 
 ``` r
+#get number of failed mobile money transactions for each location
 mmdf2 %>%
   count(hh_location, txn_ever_failed) %>% 
   filter(txn_ever_failed == 'yes')
@@ -475,6 +476,7 @@ mmdf2 %>%
     ## 2       Urban             yes  85
 
 ``` r
+#get mumber of customers at each location
 mmdf2 %>% 
   count(hh_location)
 ```
