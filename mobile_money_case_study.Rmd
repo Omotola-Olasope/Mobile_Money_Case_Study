@@ -10,7 +10,22 @@ output:
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+## Contents
+ - [Introduction and Background](#introduction-and-background)
+ -- [Objectives](#objectives)
+ - [Data Preparation](#data-preparation)
+ - [Data Processing/Cleaning](#data-processingcleaning)
+ - [Create two dummy variables](#create-two-dummy-variables-for-whether-each-participant-is)
+ - [How is the mobile money divided between the three companies?](#how-is-the-mobile-money-market-divided-between-the-three-companies)
+ - [Difference in the share of customers who have experienced failed mobile money transactions](#is-there-a-difference-in-the-share-of-customers-who-have-experienced-failed-mobile-money-transactions-in-rural-and-urban-villages-if-so-is-it-statistically-significant)
+ -- [Findings](#findings)
+ -- [Hypothesis Testing](#hypothesis-testing)
+ - [What variables are good predictors that someone will cancel their mobile money account?](#what-variables-are-good-predictors-that-someone-will-cancel-their-mobile-money-account)
+ - [What causes a customer to stop using their mobile money account?](#what-causes-a-customer-to-stop-using-their-mobile-money-account)
+ - [Key findings and Summary](#key-findings-and-summary)
+ -- [Recommendations](#recommendations)
+ -- [Limitations of the Data](#limitations-of-the-data)
+ 
 ## Introduction and background
 A company has recently finished the data collection for a project on the use of Mobile Money services and the experiences of Mobile Money customers in three districts of Kenya.
 
@@ -248,7 +263,8 @@ ggplot(aes(x = company, y = total_users), data = sum_mm_telco_users) +
   labs(x = 'mobile money company', y = 'mobile money customers', title="Mobile money market between the three companies")
 ```
 
-#### From the resulting table, company A has the most customers with 597 mobile money customers, company B has 570 customers and company C has the least with 85 customers
+#### Findings
+From the resulting table, company A has the most customers with 597 mobile money customers, company B has 570 customers and company C has the least with 85 customers
 
 
 ## Is there a difference in the share of customers who have experienced failed mobile money transactions in rural and urban villages? If so, is it statistically significant? 
@@ -275,7 +291,7 @@ ggplot(aes(x = hh_location, fill = mobile_money), data = df.mm_txn) +
 
 
 ### Determine the percentage of failed transactions per location
-```{r}
+```{r message=FALSE, warning=FALSE}
 #seperate columns for easier analysis
 df.txn <- mmdf2 %>% 
   select(hh_location, txn_ever_failed, had_issue_reslvd_after_complaint)
@@ -322,7 +338,23 @@ urbanG <- ggplot(aes(x = txn_ever_failed, y = txn_percen, fill = txn_ever_failed
 grid.arrange(ruralG, urbanG, ncol=2, top = 'Compare percentage Transactions by Location')
 ```
 
-#### There is a significant difference in the share of customers who have experienced failed mobile money transactions in rural and urban villages. 32% of transactions in urban locations have failed before while 16% of transactions in rural areas have failed before. Nevertheless, there are limitations to this figures due to the number of customers that did not give records of if their transactions failed or not.
+#### Findings
+There is a difference in the share of customers who have experienced failed mobile money transactions in rural and urban villages. 32% of transactions in urban locations have failed before while 16% of transactions in rural areas have failed before. However, to determine if it is statistically significant, hypothesis testing has to be done. Let us assume a 0.05 (5%) level of significance. We can state null and alternate hypothesis as:
+
+* H0: There is no difference in the share of customers who have experienced failed mobile money transactions in rural and urban villages.
+* Ha: There is a difference in the share of customers who have experienced failed mobile money transactions in rural and urban villages.
+
+### Hypothesis Testing 
+Based on the type of data, we perform a two-proportions z-test. This test function gives us the value of Pearson’s chi-squared test statistic, a p-value, a 95% confidence intervals and an estimated probability of success (the proportion of failed mobile money transactions in the two locations)
+
+```{r}
+prop.test(x = c(155, 85), #number of failed mobile money transactions for each location
+          n = c(940, 265), #number of customers at each location
+          correct = FALSE #Remove the Yates continuity correction
+          )
+```
+
+The z-test shows a p-value of 0.0000000201. The p-value is less than our predetermined significance level of 0.05. Thus we can say the test is consistent with our hypothesis that there is a difference in share of customers who have experienced failed mobile money transactions in rural and urban villages. Nevertheless, there are limitations to this figures due to the number of customers that did not give records of if their transactions failed or not.
 
 
 ## What variables are good predictors that someone will cancel their mobile money account?
@@ -481,7 +513,7 @@ ggplot(aes(x = understand_data_mm_providers_collect, fill = have_copy_of_terms_n
 ### Description Three
 Majority of customers do not understand what data mobile money providers collect about them, neither do they have a copy of the mobile money terms and conditions. This portends great risk as unscrupulous elements amongst the providers could take advantage of the development to breach data privacy thereby violating the rights of customers.
 
-## Summary/Recommendations
+## Recommendations
 * Sensitization as well as access to mobile money services and other digital financial services should be sustained and intensified, following the wide use of mobile money amongst the populace.
 
 * The urban locations in particular should be exploited as they are more receptive to mobile money.

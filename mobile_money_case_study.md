@@ -1,3 +1,26 @@
+## Contents
+
+-   [Introduction and Background](#introduction-and-background) –
+    [Objectives](#objectives)
+-   [Data Preparation](#data-preparation)
+-   [Data Processing/Cleaning](#data-processingcleaning)
+-   [Create two dummy
+    variables](#create-two-dummy-variables-for-whether-each-participant-is)
+-   [How is the mobile money divided between the three
+    companies?](#how-is-the-mobile-money-market-divided-between-the-three-companies)
+-   [Difference in the share of customers who have experienced failed
+    mobile money
+    transactions](#is-there-a-difference-in-the-share-of-customers-who-have-experienced-failed-mobile-money-transactions-in-rural-and-urban-villages-if-so-is-it-statistically-significant)
+    – [Findings](#findings) – [Hypothesis Testing](#hypothesis-testing)
+-   [What variables are good predictors that someone will cancel their
+    mobile money
+    account?](#what-variables-are-good-predictors-that-someone-will-cancel-their-mobile-money-account)
+-   [What causes a customer to stop using their mobile money
+    account?](#what-causes-a-customer-to-stop-using-their-mobile-money-account)
+-   [Key findings and Summary](#key-findings-and-summary) –
+    [Recommendations](#recommendations) – [Limitations of the
+    Data](#limitations-of-the-data)
+
 ## Introduction and background
 
 A company has recently finished the data collection for a project on the
@@ -305,7 +328,11 @@ ggplot(aes(x = company, y = total_users), data = sum_mm_telco_users) +
 
 ![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-12-1.png)
 
-#### From the resulting table, company A has the most customers with 597 mobile money customers, company B has 570 customers and company C has the least with 85 customers
+#### Findings
+
+From the resulting table, company A has the most customers with 597
+mobile money customers, company B has 570 customers and company C has
+the least with 85 customers
 
 ## Is there a difference in the share of customers who have experienced failed mobile money transactions in rural and urban villages? If so, is it statistically significant?
 
@@ -351,12 +378,7 @@ df.txn <- mmdf2 %>%
 grp_txn <- df.txn %>% 
   group_by(hh_location, txn_ever_failed) %>% 
   summarise(number = n())
-```
 
-    ## `summarise()` has grouped output by 'hh_location'. You can override using the
-    ## `.groups` argument.
-
-``` r
 #Filter Rural transactions
 rural_txns <- grp_txn %>% 
   filter(hh_location == 'Rural')
@@ -417,7 +439,57 @@ grid.arrange(ruralG, urbanG, ncol=2, top = 'Compare percentage Transactions by L
 
 ![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-15-1.png)
 
-#### There is a significant difference in the share of customers who have experienced failed mobile money transactions in rural and urban villages. 32% of transactions in urban locations have failed before while 16% of transactions in rural areas have failed before. Nevertheless, there are limitations to this figures due to the number of customers that did not give records of if their transactions failed or not.
+#### Findings
+
+There is a difference in the share of customers who have experienced
+failed mobile money transactions in rural and urban villages. 32% of
+transactions in urban locations have failed before while 16% of
+transactions in rural areas have failed before. However, to determine if
+it is statistically significant, hypothesis testing has to be done. Let
+us assume a 0.05 (5%) level of significance. We can state null and
+alternate hypothesis as:
+
+-   H0: There is no difference in the share of customers who have
+    experienced failed mobile money transactions in rural and urban
+    villages.
+-   Ha: There is a difference in the share of customers who have
+    experienced failed mobile money transactions in rural and urban
+    villages.
+
+### Hypothesis Testing
+
+Based on the type of data, we perform a two-proportions z-test. This
+test function gives us the value of Pearson’s chi-squared test
+statistic, a p-value, a 95% confidence intervals and an estimated
+probability of success (the proportion of failed mobile money
+transactions in the two locations)
+
+``` r
+prop.test(x = c(155, 85), #number of failed mobile money transactions for each location
+          n = c(940, 265), #number of customers at each location
+          correct = FALSE #Remove the Yates continuity correction
+          )
+```
+
+    ## 
+    ##  2-sample test for equality of proportions without continuity correction
+    ## 
+    ## data:  c(155, 85) out of c(940, 265)
+    ## X-squared = 31.485, df = 1, p-value = 0.0000000201
+    ## alternative hypothesis: two.sided
+    ## 95 percent confidence interval:
+    ##  -0.21686129 -0.09486091
+    ## sample estimates:
+    ##    prop 1    prop 2 
+    ## 0.1648936 0.3207547
+
+The z-test shows a p-value of 0.0000000201. The p-value is less than our
+predetermined significance level of 0.05. Thus we can say the test is
+consistent with our hypothesis that there is a difference in share of
+customers who have experienced failed mobile money transactions in rural
+and urban villages. Nevertheless, there are limitations to this figures
+due to the number of customers that did not give records of if their
+transactions failed or not.
 
 ## What variables are good predictors that someone will cancel their mobile money account?
 
@@ -450,7 +522,7 @@ ggplot(aes(x = district, fill = hh_location), data = mmdf2) +
   guides(fill=guide_legend(title="Customer location"))
 ```
 
-![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-16-1.png)
+![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-17-1.png)
 
 ``` r
 ggplot(aes(x = district, fill = district), data = mm_acc_cancled) +
@@ -459,7 +531,7 @@ ggplot(aes(x = district, fill = district), data = mm_acc_cancled) +
   labs(title = 'number of mobile money accounts cancelled by district')
 ```
 
-![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-16-2.png)
+![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-17-2.png)
 
 ``` r
 ggplot(aes(x = mm_trust, fill = agent_trust), data = mmdf2) +
@@ -470,7 +542,7 @@ ggplot(aes(x = mm_trust, fill = agent_trust), data = mmdf2) +
                     labels = c("N/A", "No","Yes"))
 ```
 
-![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-16-3.png)
+![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-17-3.png)
 
 ``` r
 mm_users <- ggplot(aes(x = mm_trust, fill = agent_trust), data = mmTrue) +
@@ -493,7 +565,7 @@ mm_canc <- ggplot(aes(x = mm_trust, fill = agent_trust), data = mm_acc_cancled) 
 grid.arrange(mm_users, mm_canc, ncol=2, top = 'Compare mobile money customers that dont trust mobile money and mobile money agents')
 ```
 
-![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-16-4.png)
+![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-17-4.png)
 
 #### From the charts provided above, the following insights can be made
 
@@ -520,7 +592,7 @@ ggplot(aes(x = prefer_cash), data = mmdf2) +
   labs(x = 'prefer cash?')
 ```
 
-![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-17-1.png)
+![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-18-1.png)
 
 ``` r
 ggplot(aes(x = understand_data_mm_providers_collect, fill = have_copy_of_terms_nd_cond), data = mmdf2) +
@@ -531,7 +603,7 @@ ggplot(aes(x = understand_data_mm_providers_collect, fill = have_copy_of_terms_n
   guides(fill=guide_legend(title="Do you have a copy of the \nmobile money terms and conditions?"))
 ```
 
-![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-17-2.png)
+![](mobile_money_case_study_files/figure-markdown_github/unnamed-chunk-18-2.png)
 
 #### It is noted that a vast majority of customers prefer cash. Furthermore, majority do not have a copy of the mobile money terms and conditions in addition to not understanding what data mobile money providers collect about them. Thus, one can assume that customers lack of trust in data collection and conditions of mobile money use, coupled with a preference for the cash option are factors that can cause a customer to stop using their mobile money account
 
@@ -577,7 +649,7 @@ terms and conditions. This portends great risk as unscrupulous elements
 amongst the providers could take advantage of the development to breach
 data privacy thereby violating the rights of customers.
 
-## Summary/Recommendations
+## Recommendations
 
 -   Sensitization as well as access to mobile money services and other
     digital financial services should be sustained and intensified,

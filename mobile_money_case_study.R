@@ -395,118 +395,38 @@ ggplot(aes(x = understand_data_mm_providers_collect, fill = have_copy_of_terms_n
   labs(x = 'Do you understand what data mobile money providers collect about you?') +
   guides(fill=guide_legend(title="Do you have a copy of the \nmobile money terms and conditions?"))
 
-have_copy_of_terms_nd_cond
+###################two-proportions z-test######################
 
-Do you have a copy of the mobile money terms and conditions?
+#we have two locations:
+#Rural: n = 940
+#Urban: n = 265
+
+#The number of failed mobile money transactions in each location is as follow:
+#Urbans: n = 265, 85 failed mobile money transactions, pU = 85/265 = 32.08
+#Rural: n = 940, 155 failed mobile money transactions, pR = 155/940 = 16.49
+
+#In this setting:
+#The overall proportion of failed mobile money transactions is p = frac(155+85)940+265 = 19.92
+#The overall proportion of successful mobile money transactions is q = 1−p = 80.08
+
+#The test statistic (also known as z-test) can be calculated as follow:
   
-qplot(data = mmdf2, x = hh_location, fill = vsla_account)
+#z = ((pU - pR)/sqrt((pq/nU) + (pq/nR)))
 
-df.mm_txn %>% 
-  group_by(mobile_money, hh_location) %>% 
-  summarise(number_of_customers = n())
+#where,
+#pU is the proportion of failed mobile money transactions observed in Urban with size nU
+#pR is the proportion of failed mobile money transactions observed in Rural with size nR
+#p and q are the overall proportions
 
+#using R
 
-
-
-
-###########################################################################DELETE LATER
-mmdf3$mobile_money <- as.character(mmdf3$mobile_money)
-mmdf3$bank_account <- as.character(mmdf3$bank_account)
-mmdf3$vsla_account <- as.character(mmdf3$vsla_account)
-mmdf3$sacco_account <- as.character(mmdf3$sacco_account)
-mmdf3$online_bank_account <- as.character(mmdf3$online_bank_account)
-mmdf3$no_account <- as.character(mmdf3$no_account)
+prop.test(x = c(85, 155), n = c(265, 940),
+          correct = FALSE)
 
 
 
 
 
-
-
-
-Identify all the columns in the data.
-```{r}
-colnames(mmdf)
-```
-
-Change all values in account_type with "FALSE" to blank cells
-```{r}
-mmdf$mobile_money <- gsub('FALSE', '', mmdf$mobile_money)
-mmdf$bank_account <- gsub('FALSE', '', mmdf$bank_account)
-mmdf$vsla_account <- gsub('FALSE', '', mmdf$vsla_account)
-mmdf$sacco_account <- gsub('FALSE', '', mmdf$sacco_account)
-mmdf$online_bank_account <- gsub('FALSE', '', mmdf$online_bank_account)
-mmdf$no_account <- gsub('FALSE', '', mmdf$no_account)
-```
-
-## Export resulting dataframe to csv file to continue the cleaning process in Sheets
-
-```{r}
-write.csv(mmdf,"/home/omotolaolasope/Desktop/Data_Analysis/mobile_money_case_study/mmdf.csv", row.names = FALSE)
-```
-
-## In Sheets, merge all rows with identical hhid together. Delete columns that are not needed. Import data file back into R Studio for further analysis
-
-```{r}
-mmdf <- read.csv('mmdf.csv')
-```
-
-## Rename some columns for quick understanding of variables
-
-```{r}
-
-colnames(mmdf)[10] ="hh_location" #urban
-colnames(mmdf)[22] ="undrstd_terms_nd_cond"
-colnames(mmdf)[24] ="taken_mm_loan"
-colnames(mmdf)[25] ="ntwrk_unavailable_mm_txn"
-colnames(mmdf)[26] ="clear_about_txn_fees"
-colnames(mmdf)[27] ="txn_ever_failed"
-colnames(mmdf)[28] ="agent_ever_not_had_enough_cash"
-colnames(mmdf)[29] ="have_copy_of_terms_nd_cond"
-colnames(mmdf)[30] ="undrstd_hw_nd_whr_to_complain"
-colnames(mmdf)[31] ="had_issue_reslvd_after_complaint"
-colnames(mmdf)[32] ="understand_data_mm_providers_collect"
-colnames(mmdf)[33] ="been_victim_of_fraud"
-
-```
-
-## Understanding the data and some summary statistics
-
-```{r}
-sapply(mmdf, function(x) n_distinct(x)) #get number of unique values per column
-n_distinct(mmdf$hhid)
-n_distinct(mmdf$account_type)
-unique(mmdf$account_type) #get the unique values in the column
-unique(mmdf$highest_grade_completed)
-unique(mmdf$mm_account_telco_main)
-unique(mmdf$agent_trust)
-```
-
-## Export edited dataframe to csv file to further clean in Sheets
-```{r}
-write.csv(mmdf,"/home/omotolaolasope/Desktop/Data_Analysis/mobile_money_case_study/mmdf2.csv", row.names = FALSE)
-```
-
-## Import new data file as well as raw data back into R Studio for analysis
-```{r}
-mmdf3 <- read.csv('mmdf3.csv')
-raw_df <- read.csv('mobile_money_data.csv')
-
-str(mmdf3)
-```
-
-## Change logical columns to character
-
-```{r}
-mmdf3$mobile_money <- as.character(mmdf3$mobile_money)
-mmdf3$bank_account <- as.character(mmdf3$bank_account)
-mmdf3$vsla_account <- as.character(mmdf3$vsla_account)
-mmdf3$sacco_account <- as.character(mmdf3$sacco_account)
-mmdf3$online_bank_account <- as.character(mmdf3$online_bank_account)
-mmdf3$no_account <- as.character(mmdf3$no_account)
-```
-
-
-
+#####
 
 
