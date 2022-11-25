@@ -465,6 +465,25 @@ probability of success (the proportion of failed mobile money
 transactions in the two locations)
 
 ``` r
+mmdf2 %>%
+  count(hh_location, txn_ever_failed) %>% 
+  filter(txn_ever_failed == 'yes')
+```
+
+    ##   hh_location txn_ever_failed   n
+    ## 1       Rural             yes 155
+    ## 2       Urban             yes  85
+
+``` r
+mmdf2 %>% 
+  count(hh_location)
+```
+
+    ##   hh_location   n
+    ## 1       Rural 940
+    ## 2       Urban 265
+
+``` r
 prop.test(x = c(155, 85), #number of failed mobile money transactions for each location
           n = c(940, 265), #number of customers at each location
           correct = FALSE #Remove the Yates continuity correction
