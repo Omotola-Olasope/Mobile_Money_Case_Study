@@ -348,6 +348,13 @@ There is a difference in the share of customers who have experienced failed mobi
 Based on the type of data, we perform a two-proportions z-test. This test function gives us the value of Pearson’s chi-squared test statistic, a p-value, a 95% confidence intervals and an estimated probability of success (the proportion of failed mobile money transactions in the two locations)
 
 ```{r}
+mmdf2 %>%
+  count(hh_location, txn_ever_failed) %>% 
+  filter(txn_ever_failed == 'yes')
+
+mmdf2 %>% 
+  count(hh_location)
+
 prop.test(x = c(155, 85), #number of failed mobile money transactions for each location
           n = c(940, 265), #number of customers at each location
           correct = FALSE #Remove the Yates continuity correction

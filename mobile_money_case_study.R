@@ -429,4 +429,32 @@ prop.test(x = c(85, 155), n = c(265, 940),
 
 #####
 
+mmdf2 %>%
+  count(hh_location, txn_ever_failed) %>% 
+  filter(txn_ever_failed == 'yes')
+
+mmdf2 %>% 
+  count(hh_location)
+
+ggplot(aes(x = hh_location, y = n), data = hypo.t1) +
+  geom_bar(stat = 'identity')
+
+
+df.failed_txns_by_location <- mmdf2 %>%
+  group_by(hh_location, txn_ever_failed) %>% 
+  filter(txn_ever_failed == 'yes') %>% 
+  summarise(number_of_failed_mm_txn = n())
+
+df.failed_txns_by_location$number_of_total_customers <- 
+  
+print(df.failed_txns_by_location)
+
+
+#get percentage and create new column for it
+df.failed_txns_by_location$txn_percen <- round(100*(rural_txns$number/sum(rural_txns$number)), 2)
+print(rural_txns)
+
+ggplot(aes(x = hh_location, y = n), data = hypo.t1) +
+  geom_bar(stat = 'identity')
+
 
